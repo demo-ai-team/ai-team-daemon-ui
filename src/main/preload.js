@@ -9,3 +9,4 @@ contextBridge.exposeInMainWorld('daemonDesktop', {
   notify: (title, body) => ipcRenderer.send('daemon-notify', { title, body }),
   openExternal: (url) => ipcRenderer.send('daemon-open-external', url),
 });
+

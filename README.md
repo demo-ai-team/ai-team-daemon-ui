@@ -31,3 +31,4 @@ ai-team-daemon view --ui
 ai-team-daemon ui
 ```
 Daemon CLI sẽ tự động tìm kiếm và khởi chạy ứng dụng Electron này.
+
