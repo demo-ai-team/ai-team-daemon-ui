@@ -1,0 +1,1456 @@
+<!doctype html>
+<html lang="vi" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Local Daemon</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201024%201024%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%234f46e5%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230ea5e9%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20x%3D%2264%22%20y%3D%2264%22%20width%3D%22896%22%20height%3D%22896%22%20rx%3D%22200%22%20fill%3D%22url%28%23bg%29%22%2F%3E%3Cg%20stroke%3D%22%23ffffff%22%20stroke-width%3D%2228%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.85%22%3E%3Cline%20x1%3D%22512%22%20y1%3D%22512%22%20x2%3D%22512%22%20y2%3D%22262%22%2F%3E%3Cline%20x1%3D%22512%22%20y1%3D%22512%22%20x2%3D%22296%22%20y2%3D%22650%22%2F%3E%3Cline%20x1%3D%22512%22%20y1%3D%22512%22%20x2%3D%22728%22%20y2%3D%22650%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%23ffffff%22%3E%3Ccircle%20cx%3D%22512%22%20cy%3D%22232%22%20r%3D%2264%22%2F%3E%3Ccircle%20cx%3D%22270%22%20cy%3D%22668%22%20r%3D%2264%22%2F%3E%3Ccircle%20cx%3D%22754%22%20cy%3D%22668%22%20r%3D%2264%22%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D%22512%22%20cy%3D%22512%22%20r%3D%22110%22%20fill%3D%22%23ffffff%22%2F%3E%3Ccircle%20cx%3D%22512%22%20cy%3D%22512%22%20r%3D%2252%22%20fill%3D%22%234f46e5%22%2F%3E%3C%2Fsvg%3E">
+<meta name="ai-team-token" content="__TOKEN__">
+<style nonce="__NONCE__">
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --bg: #f8fafc;
+    --bg-alt: #f1f5f9;
+    --panel: #ffffff;
+    --panel-2: #f8fafc;
+    --panel-hover: #f1f5f9;
+    --border: #e2e8f0;
+    --border-subtle: #edf2f7;
+    --text: #0f172a;
+    --text-secondary: #334155;
+    --muted: #64748b;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-soft: #eff6ff;
+    --accent-border: #bfdbfe;
+    --ok: #059669;
+    --ok-soft: #ecfdf5;
+    --ok-border: #a7f3d0;
+    --warn: #d97706;
+    --warn-soft: #fffbeb;
+    --warn-border: #fde68a;
+    --bad: #dc2626;
+    --bad-soft: #fef2f2;
+    --bad-border: #fecaca;
+    --dim: #94a3b8;
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+    --shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
+    --radius-sm: 6px;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --radius-full: 9999px;
+  }
+  [data-theme="dark"] {
+    --bg: #0b0f19;
+    --bg-alt: #111726;
+    --panel: #141c2e;
+    --panel-2: #192338;
+    --panel-hover: #1f2b45;
+    --border: #23304a;
+    --border-subtle: #1c273d;
+    --text: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --muted: #94a3b8;
+    --accent: #3b82f6;
+    --accent-hover: #60a5fa;
+    --accent-soft: #172554;
+    --accent-border: #1e3a8a;
+    --ok: #10b981;
+    --ok-soft: #064e3b;
+    --ok-border: #065f46;
+    --warn: #f59e0b;
+    --warn-soft: #451a03;
+    --warn-border: #78350f;
+    --bad: #ef4444;
+    --bad-soft: #450a0a;
+    --bad-border: #7f1d1d;
+    --dim: #64748b;
+    --shadow-sm: none;
+    --shadow: none;
+    --shadow-md: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    [data-theme="auto"] {
+      --bg: #0b0f19;
+      --bg-alt: #111726;
+      --panel: #141c2e;
+      --panel-2: #192338;
+      --panel-hover: #1f2b45;
+      --border: #23304a;
+      --border-subtle: #1c273d;
+      --text: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-hover: #60a5fa;
+      --accent-soft: #172554;
+      --accent-border: #1e3a8a;
+      --ok: #10b981;
+      --ok-soft: #064e3b;
+      --ok-border: #065f46;
+      --warn: #f59e0b;
+      --warn-soft: #451a03;
+      --warn-border: #78350f;
+      --bad: #ef4444;
+      --bad-soft: #450a0a;
+      --bad-border: #7f1d1d;
+      --dim: #64748b;
+      --shadow-sm: none;
+      --shadow: none;
+      --shadow-md: none;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.55 var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  a { color: var(--accent); text-decoration: none; transition: color 0.15s; }
+  a:hover { text-decoration: underline; color: var(--accent-hover); }
+  button { font: inherit; }
+
+  /* Header */
+  .top {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 24px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 220px;
+  }
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, #4f46e5 0%, #0284c7 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.28);
+    flex-shrink: 0;
+  }
+  .mark svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+  }
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+  }
+  .brand h1 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    color: var(--text);
+    line-height: 1.25;
+  }
+  .brand .sub {
+    color: var(--muted);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    line-height: 1.3;
+    margin-top: 1px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 12.5px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .pill::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--dim);
+    transition: all 0.2s;
+  }
+  .pill.ok {
+    background: var(--ok-soft);
+    color: var(--ok);
+    border-color: var(--ok-border);
+  }
+  .pill.ok::before {
+    background: var(--ok);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+    animation: status-pulse 2s infinite;
+  }
+  .pill.warn {
+    background: var(--warn-soft);
+    color: var(--warn);
+    border-color: var(--warn-border);
+  }
+  .pill.warn::before {
+    background: var(--warn);
+  }
+  .pill.bad {
+    background: var(--bad-soft);
+    color: var(--bad);
+    border-color: var(--bad-border);
+  }
+  .pill.bad::before {
+    background: var(--bad);
+  }
+  .pill.dim {
+    color: var(--muted);
+  }
+  @keyframes status-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.75; }
+  }
+
+  .spacer { flex: 1; }
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    transition: all 0.15s ease;
+    user-select: none;
+    box-shadow: var(--shadow-sm);
+  }
+  .btn:hover:not(:disabled) {
+    background: var(--panel-hover);
+    border-color: var(--dim);
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  }
+  .btn.primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+  .btn.danger {
+    color: var(--bad);
+    border-color: var(--bad-border);
+    background: var(--panel);
+  }
+  .btn.danger:hover:not(:disabled) {
+    background: var(--bad-soft);
+  }
+  .btn.sm {
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: var(--radius-sm);
+  }
+  .btn.icon {
+    padding: 7px 11px;
+    font-size: 15px;
+  }
+
+  /* Main container */
+  main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px 24px 48px;
+  }
+
+  /* Banner */
+  .banner {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+  .banner.warn {
+    background: var(--warn-soft);
+    border-color: var(--warn-border);
+    color: var(--warn);
+  }
+  .banner.bad {
+    background: var(--bad-soft);
+    border-color: var(--bad-border);
+    color: var(--bad);
+  }
+  .banner.info {
+    background: var(--accent-soft);
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+  .banner code {
+    font-family: var(--font-mono);
+    background: rgba(0, 0, 0, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12.5px;
+  }
+  [data-theme="dark"] .banner code {
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .hidden { display: none !important; }
+
+  /* Cards Grid */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 104px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  .card:hover {
+    box-shadow: var(--shadow);
+    border-color: var(--accent-border);
+  }
+  .card .label {
+    color: var(--muted);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .card .value {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text);
+  }
+  .card .value.small {
+    font-size: 14px;
+    font-weight: 600;
+    word-break: break-all;
+    line-height: 1.4;
+  }
+  .card .hint {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+  .card .ok { color: var(--ok); font-weight: 600; }
+  .card .bad { color: var(--bad); font-weight: 600; }
+  .card .warn { color: var(--warn); font-weight: 600; }
+
+  /* Tools list inside card */
+  .tools {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .tool {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    padding: 3px 0;
+  }
+  .tool .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--dim);
+    flex-shrink: 0;
+  }
+  .tool.on .dot {
+    background: var(--ok);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  }
+  .tool .name {
+    font-weight: 600;
+    min-width: 58px;
+    color: var(--text);
+  }
+  .tool .ver {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: var(--radius-full);
+    background: var(--accent-soft);
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border: 1px solid var(--accent-border);
+  }
+
+  /* Panels */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .panel h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+  .count {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 12px;
+    background: var(--panel-2);
+    padding: 2px 9px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+  }
+
+  /* Responsive Tables */
+  .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+    min-width: 680px;
+  }
+  th {
+    background: var(--panel-2);
+    color: var(--muted);
+    font-weight: 650;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    color: var(--text);
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  tbody tr:hover {
+    background: var(--panel-hover);
+  }
+  .mono {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+  .step {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--warn);
+    font-weight: 600;
+  }
+  .step::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--warn);
+    animation: pulse 1.4s infinite;
+  }
+  .step.repair {
+    color: var(--bad);
+  }
+  .step.repair::before {
+    background: var(--bad);
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.35; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+  .empty {
+    color: var(--muted);
+    padding: 24px 14px;
+    text-align: center;
+    font-size: 13.5px;
+  }
+
+  /* Run log selector row */
+  .filter-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    background: var(--panel-2);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  .filter-row label {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+  }
+  .filter-row select {
+    padding: 6px 12px;
+    min-width: 200px;
+  }
+  .filter-row .hint {
+    color: var(--muted);
+    font-size: 12.5px;
+    margin: 0;
+    flex: 1;
+    min-width: 240px;
+  }
+
+  /* Credential panel specifics */
+  .device-token-card {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .device-token-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .device-token-title {
+    font-weight: 650;
+    font-size: 13.5px;
+    color: var(--text);
+  }
+
+  /* Two Column Layout */
+  .columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 960px) {
+    .columns {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Activity Log */
+  .chips {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .chip {
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: var(--panel);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .chip:hover {
+    background: var(--panel-hover);
+    color: var(--text);
+  }
+  .chip.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: var(--accent-border);
+    font-weight: 600;
+  }
+  .log-wrap {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel-2);
+    overflow: hidden;
+  }
+  .log {
+    list-style: none;
+    margin: 0;
+    padding: 8px 10px;
+    max-height: 520px;
+    overflow-y: auto;
+    font-size: 12.5px;
+    font-family: var(--font-mono);
+  }
+  .log li {
+    display: grid;
+    grid-template-columns: 74px 1fr;
+    gap: 12px;
+    padding: 7px 8px;
+    border-bottom: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    transition: background 0.1s;
+  }
+  .log li:last-child {
+    border-bottom: 0;
+  }
+  .log li:hover {
+    background: var(--panel-hover);
+  }
+  .log .t {
+    color: var(--muted);
+    font-size: 11.5px;
+    padding-top: 1px;
+    user-select: none;
+  }
+  .log .m {
+    word-break: break-word;
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 13px;
+  }
+  .log .warn .m {
+    color: var(--warn);
+    font-weight: 500;
+  }
+  .log .error .m {
+    color: var(--bad);
+    font-weight: 500;
+  }
+
+  /* Forms & Settings */
+  .form-section {
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .form-section:last-of-type {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  .form-section-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
+  form .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 14px;
+    margin-bottom: 12px;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  label.check {
+    flex-direction: row;
+    align-items: center;
+    gap: 9px;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 13px;
+    margin: 8px 0 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+  label.check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  input[type="text"], input[type="password"], input[type="number"], select, textarea {
+    font: inherit;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--text);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+    width: 100%;
+  }
+  input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  textarea {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    resize: vertical;
+    line-height: 1.45;
+  }
+  input:disabled, select:disabled, textarea:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .kv {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 14px;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .kv div:nth-child(odd) {
+    font-weight: 600;
+  }
+  .kv div:nth-child(even) {
+    font-family: var(--font-mono);
+    word-break: break-all;
+    color: var(--text);
+  }
+
+  /* Footer */
+  footer {
+    color: var(--muted);
+    font-size: 12px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 0 24px 32px;
+    max-width: 1280px;
+    margin: 0 auto;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+  footer span {
+    font-family: var(--font-mono);
+  }
+
+  /* Toasts */
+  #toasts {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+    pointer-events: none;
+  }
+  .toast {
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    background: var(--text);
+    color: var(--bg);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-md);
+    max-width: 380px;
+    pointer-events: auto;
+    animation: toast-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toast.bad {
+    background: var(--bad);
+    color: #ffffff;
+  }
+  @keyframes toast-in {
+    from { transform: translateY(12px) scale(0.96); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  /* Responsive Breakpoints */
+  @media (max-width: 768px) {
+    .top {
+      padding: 10px 16px;
+      gap: 12px;
+    }
+    .brand {
+      min-width: 0;
+      flex: 1;
+    }
+    .brand h1 {
+      font-size: 15px;
+    }
+    main {
+      padding: 16px 16px 36px;
+    }
+    .cards {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .card {
+      padding: 14px 16px;
+    }
+    .panel {
+      padding: 16px;
+      border-radius: var(--radius);
+      margin-bottom: 18px;
+    }
+    form .row {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .filter-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+    .filter-row select {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .top {
+      flex-wrap: wrap;
+    }
+    .top .spacer {
+      display: none;
+    }
+    .top .actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+    .cards {
+      grid-template-columns: 1fr;
+    }
+    .btn {
+      padding: 8px 12px;
+    }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <div class="mark">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+    </div>
+    <div class="brand-text">
+      <h1>AI Local Daemon</h1>
+      <div class="sub" id="machine">đang tải…</div>
+    </div>
+  </div>
+  <span class="pill dim" id="state">…</span>
+  <div class="spacer"></div>
+  <div class="actions">
+    <button class="btn" id="btn-pause" disabled>Tạm dừng</button>
+    <button class="btn" id="btn-redetect" disabled>Dò lại công cụ</button>
+    <button class="btn icon" id="btn-theme" title="Sáng / tối / theo hệ thống">◐</button>
+  </div>
+</header>
+
+<main>
+  <div id="banner" class="banner hidden"></div>
+
+  <section class="cards">
+    <div class="card">
+      <div class="label">Orchestrator</div>
+      <div class="value small" id="orch">—</div>
+      <div class="hint" id="contact">—</div>
+    </div>
+    <div class="card">
+      <div class="label">Công cụ AI</div>
+      <div class="tools" id="tools"><div class="hint">chưa dò</div></div>
+    </div>
+    <div class="card">
+      <div class="label">Slot subagent</div>
+      <div class="value" id="slots">—</div>
+      <div class="hint" id="slots-hint">số agent chạy đồng thời</div>
+    </div>
+    <div class="card">
+      <div class="label">Môi trường</div>
+      <div class="value small" id="manifest">—</div>
+      <div class="hint" id="outbox">—</div>
+    </div>
+    <div class="card">
+      <div class="label">Token LLM hôm nay</div>
+      <div class="value" id="usage">—</div>
+      <div class="hint" id="usage-hint">chưa có lượt chạy nào</div>
+    </div>
+    <div class="card">
+      <div class="label">Kể từ khi khởi động</div>
+      <div class="value" id="totals">—</div>
+      <div class="hint" id="uptime">—</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h2>Task đang chạy <span class="count" id="task-count">0</span></h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Task</th><th>Agent</th><th>Repository / nhánh</th><th>Công cụ</th><th>Key</th><th>Giai đoạn</th><th>Tiến độ</th><th>Thời gian</th><th></th></tr></thead>
+        <tbody id="tasks"><tr><td colspan="9" class="empty">không có task nào</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h2>Nhật ký lượt chạy <span class="count" id="run-count">0</span></h2>
+    </div>
+    <div class="filter-row">
+      <label>Task <select id="run-select"><option value="">— chọn task —</option></select></label>
+      <span class="hint">Mọi thao tác agent xin làm và quyết định của chính sách, chỉ lưu trên máy này (đã che bí mật).</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Giờ</th><th>Lượt</th><th>Sự kiện</th><th>Chi tiết</th></tr></thead>
+        <tbody id="run-log"><tr><td colspan="5" class="empty">chọn một task để xem</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h2>Credential <span class="count" id="cred-store">—</span></h2>
+    </div>
+    <div class="device-token-card">
+      <div class="device-token-header">
+        <span class="device-token-title">Token thiết bị (daemon tự quản)</span>
+        <button type="button" class="btn sm" id="btn-rotate" disabled title="Lấy token thiết bị mới ngay; token cũ còn dùng được trong thời gian ân hạn">Xoay vòng token thiết bị</button>
+      </div>
+      <div class="kv" id="device-token"></div>
+      <div class="hint" style="margin-top: 8px;">Giá trị bí mật không bao giờ hiện ở đây; chỉ có tên.</div>
+    </div>
+    <div class="table-wrap" style="margin-bottom: 16px;">
+      <table>
+        <thead><tr><th>Tên</th><th>Dùng cho</th><th>Đặt lúc</th><th></th></tr></thead>
+        <tbody id="credentials"><tr><td colspan="4" class="empty">chưa có credential nào</td></tr></tbody>
+      </table>
+    </div>
+    <form id="cred-form" autocomplete="off">
+      <div class="row">
+        <label>Tên <input type="text" name="name" placeholder="llm:anthropic, git:github.com, mcp:jira" maxlength="100" required pattern="[a-z0-9][a-z0-9._:@\-]{0,99}"></label>
+        <label>Giá trị <input type="password" name="value" maxlength="8192" required autocomplete="new-password"></label>
+      </div>
+      <div class="actions"><button type="submit" class="btn primary" id="btn-cred-save">Lưu credential</button></div>
+    </form>
+  </section>
+
+  <div class="columns">
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Nhật ký hoạt động</h2>
+        <div class="chips">
+          <button type="button" class="chip active" data-level="all">Tất cả</button>
+          <button type="button" class="chip" data-level="warn">Cảnh báo</button>
+          <button type="button" class="chip" data-level="error">Lỗi</button>
+        </div>
+      </div>
+      <div class="log-wrap">
+        <ul class="log" id="activity"><li class="empty">chưa có gì</li></ul>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Cài đặt</h2>
+      </div>
+      <form id="settings">
+        <div class="form-section">
+          <div class="form-section-title">Tài nguyên & Giới hạn</div>
+          <div class="row">
+            <label>Số subagent tối đa <input type="number" name="max_subagents" min="1" max="16" required></label>
+            <label>Thời gian tối đa một task (phút) <input type="number" name="timeout_minutes" min="1" max="1440" required></label>
+          </div>
+          <div class="row">
+            <label>Số lượt gọi mô hình tối đa (0 = mặc định) <input type="number" name="max_turns" min="0" max="10000" required></label>
+            <label>Số lần tự sửa lỗi (0-5) <input type="number" name="max_repair_attempts" min="0" max="5" required title="Khi agent sửa file ngoài quyền, thoát lỗi hay trả lời sai định dạng: daemon hoàn tác, nói rõ lỗi và cho agent làm lại"></label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Ngân sách Token & Chi phí</div>
+          <div class="row">
+            <label>Token LLM tối đa một task (0 = không giới hạn) <input type="number" name="max_task_tokens" min="0" step="1" required></label>
+            <label>Ngân sách token LLM mỗi ngày (0 = không giới hạn) <input type="number" name="daily_token_budget" min="0" step="1" required></label>
+          </div>
+          <div class="row">
+            <label>Chi phí tối đa một task, USD (0 = không giới hạn) <input type="number" name="max_task_cost_usd" min="0" max="10000" step="0.01" required></label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Công cụ AI & Mô hình</div>
+          <div class="row">
+            <label>Công cụ ưu tiên
+              <select name="preferred_subagent">
+                <option value="auto">Tự chọn: claude → codex → ollama</option>
+                <option value="claude">Claude Code</option>
+                <option value="codex">Codex CLI</option>
+                <option value="ollama">Ollama (mô hình local)</option>
+              </select>
+            </label>
+            <label>Mô hình Ollama <input type="text" name="ollama_model" placeholder="qwen2.5-coder:7b" maxlength="100"></label>
+          </div>
+          <label class="check"><input type="checkbox" name="allow_local_key_fallback"> Cho phép dùng đăng nhập local khi server không cấp key (server_preferred)</label>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Chính sách thực thi (Sandbox)</div>
+          <div class="row">
+            <label>Chạy lệnh
+              <select name="shell" title="on: công cụ có sandbox của hệ điều hành chạy được mọi lệnh không bị cấm, công cụ không có sandbox chỉ chạy lệnh trong danh sách cho phép; allowlist: chỉ danh sách cho phép; off: không chạy lệnh">
+                <option value="on">on: mọi lệnh không bị cấm khi có sandbox, danh sách cho phép khi không</option>
+                <option value="allowlist">allowlist: chỉ lệnh trong danh sách cho phép</option>
+                <option value="off">off: không chạy lệnh</option>
+              </select>
+            </label>
+            <label class="check" style="margin-top: 24px;"><input type="checkbox" name="network"> Cho phép mạng (công cụ web, lệnh truy cập mạng)</label>
+          </div>
+          <div class="row">
+            <label>Danh sách cho phép (mỗi dòng một mẫu, * là bất kỳ) <textarea name="allow" rows="5" spellcheck="false"></textarea></label>
+            <label>Danh sách cấm (luôn thắng) <textarea name="deny" rows="5" spellcheck="false"></textarea></label>
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top: 14px;">
+          <button type="submit" class="btn primary" id="btn-save" disabled>Lưu cài đặt</button>
+          <span class="hint" id="settings-hint"></span>
+        </div>
+        <div class="kv" id="config-kv"></div>
+      </form>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <span id="f-version">v__VERSION__</span>
+  <span id="f-dir"></span>
+  <span id="f-server"></span>
+</footer>
+<div id="toasts"></div>
+
+<script nonce="__NONCE__">
+(() => {
+  'use strict';
+  const TOKEN = document.querySelector('meta[name="ai-team-token"]').content;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const POLL_MS = 1500;
+  let last = null;
+  let filter = 'all';
+  let formDirty = false;
+  let formLoaded = false;
+  let failures = 0;
+
+  // ---- helpers ---------------------------------------------------------------------------------------------
+  const duration = (ms) => {
+    const s = Math.max(0, Math.round(ms / 1000));
+    if (s < 60) return `${s}s`;
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m${String(s % 60).padStart(2, '0')}s`;
+    return `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}m`;
+  };
+  const ago = (iso, now) => (iso ? `${duration(now - new Date(iso).getTime())} trước` : 'chưa bao giờ');
+  const clock = (iso) => new Date(iso).toTimeString().slice(0, 8);
+  const shortId = (id) => String(id || '').replace(/^dtask-/, '').replace(/^ai-dev-/, '').slice(0, 8);
+
+  async function api(path, options = {}) {
+    const response = await fetch(path, { ...options, headers: { authorization: `Bearer ${TOKEN}`, ...(options.body ? { 'content-type': 'application/json' } : {}), ...(options.headers || {}) } });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
+    return body;
+  }
+
+  function toast(message, bad = false) {
+    const el = document.createElement('div');
+    el.className = `toast${bad ? ' bad' : ''}`;
+    el.textContent = message;
+    $('toasts').appendChild(el);
+    setTimeout(() => el.remove(), 4200);
+  }
+
+  async function control(command, okMessage) {
+    try {
+      await api('/api/control', { method: 'POST', body: JSON.stringify(command) });
+      toast(okMessage);
+      setTimeout(refresh, 300);
+    } catch (err) {
+      toast(`Không gửi được lệnh: ${err.message}`, true);
+    }
+  }
+
+  // ---- state ---------------------------------------------------------------------------------------------
+  function stateOf(data) {
+    const snap = data.snapshot;
+    if (!snap) return { label: 'Chưa có trạng thái', cls: 'dim' };
+    if (!data.alive) return { label: 'Không chạy', cls: 'bad' };
+    if (snap.update_required) return { label: 'Cần cập nhật daemon', cls: 'warn' };
+    const conn = (snap.connection || {}).state;
+    if (snap.paused && (conn === 'online' || conn === 'starting')) return { label: 'Tạm dừng', cls: 'warn' };
+    return {
+      online: { label: 'Đang kết nối', cls: 'ok' }, offline: { label: 'Mất kết nối orchestrator', cls: 'bad' }, revoked: { label: 'Thiết bị bị thu hồi', cls: 'bad' }, expired: { label: 'Token thiết bị hết hạn', cls: 'bad' },
+      starting: { label: 'Đang khởi động', cls: 'warn' }, stopped: { label: 'Đã dừng', cls: 'dim' },
+    }[conn] || { label: 'Không rõ', cls: 'warn' };
+  }
+
+  function banner(data) {
+    const el = $('banner');
+    const snap = data.snapshot;
+    const conn = snap ? snap.connection || {} : {};
+    let html = null;
+    let cls = 'info';
+    if (!snap) { html = 'Máy này chưa chạy daemon lần nào. Chạy <code>ai-team-daemon setup</code> để cài đặt, rồi <code>ai-team-daemon run</code>.'; }
+    else if (!data.alive) { html = `Tiến trình daemon (pid ${esc(snap.pid)}) không chạy; cập nhật cuối ${esc(ago(snap.updated_at, Date.now()))}. Chạy <code>ai-team-daemon run</code> (hoặc <code>install</code> để tự chạy khi đăng nhập).`; cls = 'bad'; }
+    else if (conn.state === 'revoked') { html = 'Orchestrator đã thu hồi thiết bị này. Chạy <code>ai-team-daemon setup</code> để đăng ký lại với mã mới.'; cls = 'bad'; }
+    else if (conn.state === 'expired') { html = 'Token thiết bị đã hết hạn. Chạy <code>ai-team-daemon setup</code> để đăng ký lại với mã mới.'; cls = 'bad'; }
+    else if (snap.device_token && snap.device_token.unsaved) { html = 'Token thiết bị vừa xoay vòng nhưng chưa lưu được vào kho credential; daemon đang thử lại. Đừng dừng daemon cho tới khi lỗi được sửa.'; cls = 'bad'; }
+    else if (conn.state === 'offline') { html = `Không kết nối được orchestrator: ${esc(conn.last_error || 'lỗi không rõ')}. Daemon sẽ tự thử lại.`; cls = 'warn'; }
+    else if (snap.update_required) { html = `Daemon cũ hơn phiên bản tối thiểu ${esc(snap.min_version)}; không nhận task mới cho đến khi cập nhật.`; cls = 'warn'; }
+    else if (snap.paused) { html = 'Đang tạm dừng: task đang chạy sẽ chạy xong, không nhận task mới cho đến khi bấm <b>Tiếp tục</b>.'; cls = 'warn'; }
+    else if (snap.capabilities && snap.capabilities.subagents && snap.capabilities.subagents.length === 0) { html = 'Không tìm thấy công cụ AI nào (claude, codex, ollama). Cài một công cụ rồi bấm <b>Dò lại công cụ</b>.'; cls = 'warn'; }
+    el.className = html ? `banner ${cls}` : 'banner hidden';
+    el.innerHTML = html || '';
+  }
+
+  function render(data) {
+    const now = Date.now();
+    const snap = data.snapshot || {};
+    const st = stateOf(data);
+    $('state').textContent = st.label;
+    $('state').className = `pill ${st.cls}`;
+    $('machine').textContent = snap.name ? `${snap.name} · ${snap.daemon_id || 'chưa đăng ký'}${snap.version ? ` · v${snap.version}` : ''}` : 'chưa đăng ký';
+    banner(data);
+
+    const conn = snap.connection || {};
+    $('orch').textContent = snap.orchestrator_url || (data.config && data.config.orchestrator_url) || '—';
+    $('contact').textContent = `liên lạc lần cuối: ${ago(conn.last_ok_at, now)}`;
+
+    const caps = snap.capabilities || {};
+    const tools = caps.tools && caps.tools.length ? caps.tools : null;
+    if (tools) {
+      $('tools').innerHTML = tools.map((t) => `<div class="tool${t.installed ? ' on' : ''}"><span class="dot"></span><span class="name">${esc(t.name)}</span>${t.default ? '<span class="badge">mặc định</span>' : ''}<span class="ver">${t.installed ? esc(t.version || t.path || 'đã cài') : 'chưa cài'}</span></div>`).join('');
+    } else if (caps.subagents) {
+      $('tools').innerHTML = caps.subagents.length ? caps.subagents.map((n) => `<div class="tool on"><span class="dot"></span><span class="name">${esc(n)}</span>${caps.default_subagent === n ? '<span class="badge">mặc định</span>' : ''}</div>`).join('') : '<div class="hint">không tìm thấy công cụ nào</div>';
+    }
+    const slots = snap.slots || { used: 0, max: 0 };
+    $('slots').textContent = `${slots.used} / ${slots.max}`;
+    $('slots-hint').textContent = snap.paused ? 'tạm dừng: không nhận task mới' : `đang dùng ${slots.used}, tối đa ${slots.max}`;
+    const prov = caps.provisioning;
+    $('manifest').innerHTML = prov ? `manifest v${esc(prov.manifest_version)} ${prov.ok ? '<span class="ok">✔ đủ</span>' : `<span class="bad">✖ thiếu ${prov.failed.length}</span>`}` : 'chưa có manifest';
+    $('outbox').textContent = `${snap.outbox || 0} sự kiện chưa gửi${prov && !prov.ok ? ` · thiếu: ${prov.failed.join(', ')}` : ''}`;
+    const usage = snap.usage_today;
+    const limits = snap.token_limits || {};
+    if (usage) {
+      const over = limits.daily_token_budget && usage.total_tokens >= limits.daily_token_budget;
+      $('usage').innerHTML = `<span class="${over ? 'bad' : ''}">${esc(usage.total_tokens.toLocaleString())}</span>${limits.daily_token_budget ? ` <span class="hint">/ ${esc(limits.daily_token_budget.toLocaleString())}</span>` : ''}`;
+      $('usage-hint').textContent = `vào ${usage.input_tokens} · ra ${usage.output_tokens}${usage.cost_usd ? ` · $${usage.cost_usd}` : ''}${usage.estimated_runs ? ` · ${usage.estimated_runs} lượt ước lượng` : ''}${limits.max_task_tokens ? ` · tối đa ${limits.max_task_tokens}/task` : ''}`;
+    }
+    const creds = data.credentials;
+    $('cred-store').textContent = creds && creds.backend ? creds.backend : 'chưa dùng';
+    const device = snap.device_token || {};
+    $('device-token').innerHTML = [
+      ['Token thiết bị', device.expires_at ? `hết hạn ${new Date(device.expires_at).toLocaleString()}` : 'không có hạn'],
+      ['Xoay vòng lần cuối', device.rotated_at ? ago(device.rotated_at, now) : 'chưa'],
+    ].map(([k, v]) => `<div>${esc(k)}</div><div>${esc(v)}</div>`).join('');
+    const purpose = (name) => (name === 'device_token' ? 'kết nối orchestrator (daemon tự quản)' : name.startsWith('llm:') ? 'key LLM cho lượt chạy local' : name.startsWith('git:') ? 'git cho host này' : name.startsWith('mcp:') ? 'secret của MCP server' : '');
+    const items = (creds && creds.items) || [];
+    $('credentials').innerHTML = items.length
+      ? items.map((c) => `<tr><td class="mono">${esc(c.name)}</td><td>${esc(purpose(c.name))}</td><td class="mono">${esc(c.updated_at ? ago(c.updated_at, now) : '')}</td><td>${c.name === 'device_token' ? '' : `<button type="button" class="btn sm danger" data-forget="${esc(c.name)}" ${data.credentials_writable ? '' : 'disabled'}>Xóa</button>`}</td></tr>`).join('')
+      : '<tr><td colspan="4" class="empty">chưa có credential nào</td></tr>';
+    $('btn-rotate').disabled = !data.control;
+    for (const el of $('cred-form').elements) el.disabled = !data.credentials_writable;
+    const t = snap.totals || {};
+    $('totals').innerHTML = `<span class="ok">${t.succeeded || 0}</span> <span class="hint">xong</span> · <span class="${t.failed ? 'bad' : ''}">${t.failed || 0}</span> <span class="hint">lỗi</span> · ${t.cancelled || 0} <span class="hint">hủy</span>`;
+    $('uptime').textContent = snap.started_at ? `khởi động ${ago(snap.started_at, now)}` : '—';
+
+    const tasks = snap.tasks || [];
+    $('task-count').textContent = tasks.length;
+    $('tasks').innerHTML = tasks.length
+      ? tasks.map((task) => `<tr>
+          <td class="mono" title="${esc(task.task_id)}">${esc(shortId(task.task_id))}</td>
+          <td><b>${esc(task.role)}</b></td>
+          <td class="mono">${esc(task.repository)}/${esc(task.branch)}</td>
+          <td>${esc(task.subagent)}${task.requested && task.requested !== task.subagent ? ` <span class="hint">(${esc(task.requested)})</span>` : ''}</td>
+          <td class="mono">${esc(task.key_origin || task.key_source)}</td>
+          <td><span class="step${/repairing/.test(task.step) ? ' repair' : ''}">${esc(task.step)}</span></td>
+          <td class="mono">${task.tool_calls !== undefined ? `${esc(task.turns)} lượt · ${esc(task.tool_calls)} thao tác${task.policy_denials ? ` · <span class="bad">${esc(task.policy_denials)} bị chặn</span>` : ''}` : '—'}</td>
+          <td class="mono">${esc(duration(now - new Date(task.started_at).getTime()))}</td>
+          <td><button type="button" class="btn sm" data-log="${esc(task.task_id)}">Nhật ký</button> <button type="button" class="btn sm danger" data-cancel="${esc(task.task_id)}" ${data.control && task.step !== 'cancelling' ? '' : 'disabled'}>Hủy</button></td>
+        </tr>`).join('')
+      : '<tr><td colspan="9" class="empty">không có task nào · daemon đang chờ orchestrator giao việc</td></tr>';
+
+    const entries = (data.activity || []).filter((e) => filter === 'all' || (filter === 'warn' ? e.level === 'warn' || e.level === 'error' : e.level === filter)).slice().reverse();
+    $('activity').innerHTML = entries.length ? entries.map((e) => `<li class="${esc(e.level)}"><span class="t">${esc(clock(e.at))}</span><span class="m">${esc(e.message)}</span></li>`).join('') : '<li class="empty">chưa có gì</li>';
+
+    const canControl = Boolean(data.control);
+    $('btn-pause').disabled = !canControl;
+    $('btn-pause').textContent = snap.paused ? 'Tiếp tục' : 'Tạm dừng';
+    $('btn-redetect').disabled = !canControl;
+    $('btn-save').disabled = !canControl;
+    $('settings-hint').textContent = canControl ? '' : 'daemon không chạy: sửa trực tiếp config.json hoặc chạy ai-team-daemon setup';
+    for (const el of $('settings').elements) if (el.name) el.disabled = !canControl;
+
+    if (data.config && (!formLoaded || !formDirty)) {
+      const f = $('settings').elements;
+      f.max_subagents.value = data.config.max_subagents;
+      f.timeout_minutes.value = Math.round(data.config.task_timeout_ms / 60000);
+      f.preferred_subagent.value = data.config.preferred_subagent || 'auto';
+      f.ollama_model.value = (data.config.adapters.ollama || {}).model || '';
+      f.allow_local_key_fallback.checked = Boolean(data.config.allow_local_key_fallback);
+      f.max_repair_attempts.value = data.config.max_repair_attempts ?? 2;
+      f.max_task_tokens.value = data.config.max_task_tokens ?? 0;
+      f.daily_token_budget.value = data.config.daily_token_budget ?? 0;
+      f.max_turns.value = data.config.max_turns ?? 100;
+      f.max_task_cost_usd.value = data.config.max_task_cost_usd ?? 0;
+      const exec = data.config.execution || {};
+      f.shell.value = exec.shell || 'on';
+      f.network.checked = Boolean(exec.network);
+      f.allow.value = (exec.allow || []).join('\n');
+      f.deny.value = (exec.deny || []).join('\n');
+      formLoaded = true;
+      $('config-kv').innerHTML = [
+        ['Máy', data.config.name], ['Git host', (data.config.allowed_git_hosts || []).join(', ')], ['Workspace tối đa', `${data.config.max_workspace_mb} MB`],
+        ['Ngân sách context', `${data.config.context_token_budget} token`], ['Web console', data.config.ui && data.config.ui.enabled ? `cổng ${data.config.ui.port}` : 'tắt'],
+      ].map(([k, v]) => `<div>${esc(k)}</div><div>${esc(v)}</div>`).join('');
+    }
+    $('f-dir').textContent = data.data_dir || '';
+    $('f-server').textContent = data.server ? (data.server.embedded ? 'giao diện do chính daemon phục vụ' : 'giao diện chạy riêng (ai-team-daemon view --ui)') : '';
+  }
+
+  async function refresh() {
+    try {
+      last = await api('/api/state');
+      failures = 0;
+      render(last);
+    } catch (err) {
+      failures += 1;
+      if (failures >= 2) {
+        $('state').textContent = 'Mất kết nối với giao diện';
+        $('state').className = 'pill bad';
+        $('banner').className = 'banner bad';
+        $('banner').textContent = `Không gọi được server giao diện (${err.message}). Nếu daemon đã dừng, chạy lại ai-team-daemon run hoặc ai-team-daemon view --ui.`;
+      }
+    } finally {
+      setTimeout(refresh, POLL_MS);
+    }
+  }
+
+  // ---- events ------------------------------------------------------------------------------------------
+  $('btn-pause').addEventListener('click', () => {
+    const paused = last && last.snapshot && last.snapshot.paused;
+    control({ action: paused ? 'resume' : 'pause' }, paused ? 'Đã yêu cầu tiếp tục nhận task' : 'Đã yêu cầu tạm dừng');
+  });
+  $('btn-redetect').addEventListener('click', () => control({ action: 'redetect' }, 'Đang dò lại công cụ AI…'));
+  async function showRun(id) {
+    if (!id) {
+      $('run-log').innerHTML = '<tr><td colspan="5" class="empty">chọn một task để xem</td></tr>';
+      return;
+    }
+    try {
+      const { events } = await api(`/api/runs/${encodeURIComponent(id)}`);
+      const detail = (e) => {
+        if (e.type === 'policy.decision') return `<span class="${e.allow ? 'ok' : 'bad'}">${e.allow ? 'cho phép' : 'từ chối'}</span> ${esc(e.rule || '')}${e.reason ? ` · ${esc(e.reason)}` : ''}`;
+        if (e.type === 'tool.requested') return `${esc(e.kind || '')} ${esc(e.name || '')} ${esc((e.paths || []).join(', ') || e.command || '')}`;
+        if (e.type === 'usage') return `vào ${esc(e.input_tokens)} · ra ${esc(e.output_tokens)}${e.cost_usd ? ` · ${esc(e.cost_usd)}` : ''}`;
+        if (e.type === 'message' || e.type === 'turn.completed') return esc(String(e.text || e.summary || '').slice(0, 300));
+        if (e.type === 'run.failed') return `<span class="bad">${esc(e.code)}</span> ${esc(e.message)}`;
+        return esc(JSON.stringify(Object.fromEntries(Object.entries(e).filter(([k]) => !['seq', 'at', 'attempt', 'type'].includes(k)))).slice(0, 300));
+      };
+      $('run-log').innerHTML = events.length
+        ? events.slice().reverse().map((e) => `<tr><td class="mono">${esc(e.seq)}</td><td class="mono">${esc(clock(e.at))}</td><td class="mono">${esc(e.attempt)}</td><td class="mono">${esc(e.type)}</td><td>${detail(e)}</td></tr>`).join('')
+        : '<tr><td colspan="5" class="empty">nhật ký trống</td></tr>';
+    } catch (err) {
+      $('run-log').innerHTML = `<tr><td colspan="5" class="empty">không đọc được: ${esc(err.message)}</td></tr>`;
+    }
+  }
+  async function loadRuns() {
+    try {
+      const { runs } = await api('/api/runs');
+      $('run-count').textContent = runs.length;
+      const current = $('run-select').value;
+      $('run-select').innerHTML = '<option value="">— chọn task —</option>' + runs.map((r) => `<option value="${esc(r.task_id)}">${esc(shortId(r.task_id))} · ${esc(clock(r.updated_at))}</option>`).join('');
+      $('run-select').value = runs.some((r) => r.task_id === current) ? current : '';
+      if ($('run-select').value) showRun($('run-select').value);
+    } catch {
+      // the list is a convenience; the next refresh tries again
+    }
+  }
+  $('run-select').addEventListener('change', () => showRun($('run-select').value));
+  setInterval(loadRuns, 5000);
+  loadRuns();
+  $('tasks').addEventListener('click', (event) => {
+    const log = event.target.closest('[data-log]');
+    if (log) {
+      const id = log.getAttribute('data-log');
+      if (![...$('run-select').options].some((o) => o.value === id)) $('run-select').insertAdjacentHTML('beforeend', `<option value="${esc(id)}">${esc(shortId(id))}</option>`);
+      $('run-select').value = id;
+      showRun(id);
+      return;
+    }
+    const button = event.target.closest('[data-cancel]');
+    if (!button) return;
+    const id = button.getAttribute('data-cancel');
+    if (window.confirm(`Hủy task ${shortId(id)}? Orchestrator sẽ nhận báo cáo "cancelled by the operator" và bước này của workflow thất bại.`)) {
+      control({ action: 'cancel_task', task_id: id }, `Đã yêu cầu hủy task ${shortId(id)}`);
+    }
+  });
+  for (const chip of document.querySelectorAll('.chip')) {
+    chip.addEventListener('click', () => {
+      filter = chip.dataset.level;
+      for (const c of document.querySelectorAll('.chip')) c.classList.toggle('active', c === chip);
+      if (last) render(last);
+    });
+  }
+  $('settings').addEventListener('input', () => { formDirty = true; });
+  $('settings').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const f = $('settings').elements;
+    const changes = {
+      max_subagents: Number(f.max_subagents.value),
+      task_timeout_ms: Number(f.timeout_minutes.value) * 60000,
+      preferred_subagent: f.preferred_subagent.value,
+      allow_local_key_fallback: f.allow_local_key_fallback.checked,
+      max_repair_attempts: Number(f.max_repair_attempts.value),
+      max_task_tokens: Number(f.max_task_tokens.value),
+      daily_token_budget: Number(f.daily_token_budget.value),
+      max_turns: Number(f.max_turns.value),
+      max_task_cost_usd: Number(f.max_task_cost_usd.value),
+      shell: f.shell.value,
+      network: f.network.checked,
+      allow: f.allow.value,
+      deny: f.deny.value,
+    };
+    if (f.ollama_model.value.trim()) changes.ollama_model = f.ollama_model.value.trim();
+    formDirty = false;
+    control({ action: 'configure', changes }, 'Đã gửi cài đặt mới; daemon ghi vào config.json');
+  });
+  $('btn-rotate').addEventListener('click', () => {
+    if (window.confirm('Lấy token thiết bị mới ngay? Token hiện tại còn dùng được trong thời gian ân hạn, rồi hết hiệu lực.')) control({ action: 'rotate_token' }, 'Đã yêu cầu xoay vòng token thiết bị');
+  });
+  async function credentials(body, okMessage) {
+    try {
+      await api('/api/credentials', { method: 'POST', body: JSON.stringify(body) });
+      toast(okMessage);
+      setTimeout(refresh, 200);
+    } catch (err) {
+      toast(`Không lưu được: ${err.message}`, true);
+    }
+  }
+  $('cred-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const f = $('cred-form').elements;
+    const name = f.name.value.trim();
+    const value = f.value.value;
+    f.value.value = ''; // the value leaves the page at once
+    credentials({ action: 'set', name, value }, `Đã lưu ${name}`);
+  });
+  $('credentials').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-forget]');
+    if (!button) return;
+    const name = button.getAttribute('data-forget');
+    if (window.confirm(`Xóa credential ${name} khỏi máy này?`)) credentials({ action: 'remove', name }, `Đã xóa ${name}`);
+  });
+  $('btn-theme').addEventListener('click', () => {
+    const order = ['auto', 'light', 'dark'];
+    const current = document.documentElement.dataset.theme || 'auto';
+    const next = order[(order.indexOf(current) + 1) % order.length];
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('ai-team-daemon-theme', next); } catch { /* private window */ }
+    toast(`Giao diện: ${{ auto: 'theo hệ thống', light: 'sáng', dark: 'tối' }[next]}`);
+  });
+  try {
+    const saved = localStorage.getItem('ai-team-daemon-theme');
+    if (saved) document.documentElement.dataset.theme = saved;
+  } catch { /* ignore */ }
+
+  refresh();
+})();
+</script>
+</body>
+</html>
