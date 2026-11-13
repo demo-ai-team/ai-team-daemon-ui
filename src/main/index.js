@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 
 let mainWindow = null;
+let currentDataDir = null;
 
 function parseArgs(argv) {
   const args = {};
@@ -45,6 +46,24 @@ function findDaemonUrl(dataDir) {
   return null;
 }
 
+function findDaemonToken(dataDir) {
+  try {
+    const tokenFile = path.join(dataDir, 'ui.token');
+    if (fs.existsSync(tokenFile)) {
+      return fs.readFileSync(tokenFile, 'utf8').trim();
+    }
+  } catch {
+    // fallback
+  }
+  return null;
+}
+
+function sendMenuAction(action) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('menu-action', action);
+  }
+}
+
 function createMenu() {
   const isMac = process.platform === 'darwin';
   const template = [
@@ -65,48 +84,107 @@ function createMenu() {
         }]
       : []),
     {
-      label: 'File',
-      submenu: [isMac ? { role: 'close' } : { role: 'quit' }],
-    },
-    {
-      label: 'Edit',
+      label: 'Tệp',
       submenu: [
-        { role: 'undo' },
-        { role: 'redo' },
+        {
+          label: 'Giao việc mới…',
+          accelerator: 'CmdOrCtrl+N',
+          click: () => sendMenuAction('dispatch-task'),
+        },
         { type: 'separator' },
-        { role: 'cut' },
-        { role: 'copy' },
-        { role: 'paste' },
-        { role: 'selectAll' },
+        isMac ? { role: 'close' } : { role: 'quit', label: 'Thoát' },
       ],
     },
     {
-      label: 'View',
+      label: 'Thao tác',
       submenu: [
-        { role: 'reload' },
-        { role: 'forceReload' },
-        { role: 'toggleDevTools' },
+        {
+          label: 'Tạm dừng / Tiếp tục',
+          accelerator: 'CmdOrCtrl+P',
+          click: () => sendMenuAction('toggle-pause'),
+        },
+        {
+          label: 'Dò lại công cụ AI',
+          accelerator: 'CmdOrCtrl+Shift+R',
+          click: () => sendMenuAction('redetect'),
+        },
+        {
+          label: 'Xoay vòng token thiết bị',
+          click: () => sendMenuAction('rotate-token'),
+        },
         { type: 'separator' },
-        { role: 'resetZoom' },
-        { role: 'zoomIn' },
-        { role: 'zoomOut' },
-        { type: 'separator' },
-        { role: 'togglefullscreen' },
+        {
+          label: 'Chuyển đổi giao diện (Sáng/Tối)',
+          accelerator: 'CmdOrCtrl+T',
+          click: () => sendMenuAction('toggle-theme'),
+        },
       ],
     },
     {
-      label: 'Window',
+      label: 'Điều hướng',
       submenu: [
-        { role: 'minimize' },
-        { role: 'zoom' },
-        ...(isMac ? [{ type: 'separator' }, { role: 'front' }] : [{ role: 'close' }]),
+        {
+          label: 'Trạng thái & Tổng quan',
+          accelerator: 'CmdOrCtrl+1',
+          click: () => sendMenuAction('tab-status'),
+        },
+        {
+          label: 'Giao việc trực tiếp',
+          accelerator: 'CmdOrCtrl+2',
+          click: () => sendMenuAction('tab-dispatch'),
+        },
+        {
+          label: 'Lịch sử & Nhật ký',
+          accelerator: 'CmdOrCtrl+3',
+          click: () => sendMenuAction('tab-runs'),
+        },
+        {
+          label: 'Cài đặt & Setup',
+          accelerator: 'CmdOrCtrl+,',
+          click: () => sendMenuAction('tab-settings'),
+        },
+      ],
+    },
+    {
+      label: 'Chỉnh sửa',
+      submenu: [
+        { role: 'undo', label: 'Hoàn tác' },
+        { role: 'redo', label: 'Làm lại' },
+        { type: 'separator' },
+        { role: 'cut', label: 'Cắt' },
+        { role: 'copy', label: 'Sao chép' },
+        { role: 'paste', label: 'Dán' },
+        { role: 'selectAll', label: 'Chọn tất cả' },
+      ],
+    },
+    {
+      label: 'Xem',
+      submenu: [
+        { role: 'reload', label: 'Tải lại' },
+        { role: 'forceReload', label: 'Tải lại toàn bộ' },
+        { role: 'toggleDevTools', label: 'Công cụ nhà phát triển' },
+        { type: 'separator' },
+        { role: 'resetZoom', label: 'Kích thước chuẩn' },
+        { role: 'zoomIn', label: 'Phóng to' },
+        { role: 'zoomOut', label: 'Thu nhỏ' },
+        { type: 'separator' },
+        { role: 'togglefullscreen', label: 'Toàn màn hình' },
+      ],
+    },
+    {
+      label: 'Cửa sổ',
+      submenu: [
+        { role: 'minimize', label: 'Thu nhỏ' },
+        { role: 'zoom', label: 'Phóng to' },
+        ...(isMac ? [{ type: 'separator' }, { role: 'front' }] : [{ role: 'close', label: 'Đóng' }]),
       ],
     },
     {
       role: 'help',
+      label: 'Trợ giúp',
       submenu: [
         {
-          label: 'AI Team Documentation',
+          label: 'Tài liệu AI Local Daemon',
           click: async () => {
             await shell.openExternal('https://github.com/demo-ai-team/ai-team-daemon');
           },
@@ -121,14 +199,13 @@ function createMenu() {
 
 function createWindow() {
   const cliArgs = parseArgs(process.argv);
-  const dataDir = cliArgs.dataDir || resolveDataDir();
-  const targetUrl = cliArgs.url || findDaemonUrl(dataDir);
+  currentDataDir = cliArgs.dataDir || resolveDataDir();
 
   mainWindow = new BrowserWindow({
-    width: 1240,
-    height: 860,
-    minWidth: 840,
-    minHeight: 600,
+    width: 1260,
+    height: 880,
+    minWidth: 880,
+    minHeight: 640,
     title: 'AI Local Daemon',
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#0b0f19' : '#f8fafc',
     show: false,
@@ -151,11 +228,7 @@ function createWindow() {
     return { action: 'deny' };
   });
 
-  if (targetUrl) {
-    mainWindow.loadURL(targetUrl);
-  } else {
-    mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
-  }
+  mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -175,6 +248,56 @@ ipcMain.on('daemon-open-external', (_event, url) => {
   }
 });
 
+ipcMain.handle('daemon-info', () => {
+  const dataDir = currentDataDir || resolveDataDir();
+  return {
+    dataDir,
+    daemonUrl: findDaemonUrl(dataDir) || 'http://127.0.0.1:7471/',
+    hasToken: Boolean(findDaemonToken(dataDir)),
+    platform: process.platform,
+    version: app.getVersion(),
+  };
+});
+
+ipcMain.handle('daemon-api', async (_event, { method = 'GET', pathname = '/api/state', body = undefined, customUrl = null } = {}) => {
+  const dataDir = currentDataDir || resolveDataDir();
+  const baseUrl = (customUrl || findDaemonUrl(dataDir) || 'http://127.0.0.1:7471/').replace(/\/+$/, '');
+  const token = findDaemonToken(dataDir);
+  const normalizedPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
+  const targetUrl = new URL(normalizedPath, baseUrl);
+
+  const headers = { accept: 'application/json' };
+  if (token) headers.authorization = `Bearer ${token}`;
+  if (body !== undefined) headers['content-type'] = 'application/json';
+
+  try {
+    const res = await fetch(targetUrl, {
+      method: method.toUpperCase(),
+      headers,
+      body: body === undefined ? undefined : (typeof body === 'string' ? body : JSON.stringify(body)),
+    });
+    const text = await res.text();
+    let data;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = text;
+    }
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        status: res.status,
+        error: (data && data.error) || `HTTP ${res.status}`,
+        body: data,
+      };
+    }
+    return { ok: true, status: res.status, body: data };
+  } catch (err) {
+    return { ok: false, status: 0, error: err.message };
+  }
+});
+
 app.whenReady().then(() => {
   createMenu();
   createWindow();
@@ -187,4 +310,3 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
-
