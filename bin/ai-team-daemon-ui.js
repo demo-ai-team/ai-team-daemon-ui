@@ -13,17 +13,19 @@ try {
   // electron not installed in local node_modules
 }
 
+const env = { ...process.env };
+delete env.ELECTRON_RUN_AS_NODE;
+
 if (!electronBin) {
-  // Try npx electron
   const child = spawn('npx', ['electron', projectRoot, ...process.argv.slice(2)], {
     stdio: 'inherit',
-    env: process.env,
+    env,
   });
   child.on('exit', (code) => process.exit(code || 0));
 } else {
   const child = spawn(electronBin, [projectRoot, ...process.argv.slice(2)], {
     stdio: 'inherit',
-    env: process.env,
+    env,
   });
   child.on('exit', (code) => process.exit(code || 0));
 }
