@@ -7,6 +7,7 @@ const os = require('node:os');
 
 let mainWindow = null;
 let currentDataDir = null;
+let cliUrl = null; // --url: talk to this console address instead of the one in status.json
 
 function parseArgs(argv) {
   const args = {};
@@ -104,6 +105,10 @@ function createMenu() {
           click: () => sendMenuAction('toggle-pause'),
         },
         {
+          label: 'Bật / Tắt chế độ drain',
+          click: () => sendMenuAction('toggle-drain'),
+        },
+        {
           label: 'Dò lại công cụ AI',
           accelerator: 'CmdOrCtrl+Shift+R',
           click: () => sendMenuAction('redetect'),
@@ -113,6 +118,11 @@ function createMenu() {
           click: () => sendMenuAction('rotate-token'),
         },
         { type: 'separator' },
+        {
+          label: 'Làm mới dữ liệu',
+          accelerator: 'F5',
+          click: () => sendMenuAction('refresh'),
+        },
         {
           label: 'Chuyển đổi giao diện (Sáng/Tối)',
           accelerator: 'CmdOrCtrl+T',
@@ -124,23 +134,23 @@ function createMenu() {
       label: 'Điều hướng',
       submenu: [
         {
-          label: 'Trạng thái & Tổng quan',
+          label: 'Tổng quan',
           accelerator: 'CmdOrCtrl+1',
           click: () => sendMenuAction('tab-status'),
         },
         {
-          label: 'Giao việc trực tiếp',
+          label: 'Giao việc',
           accelerator: 'CmdOrCtrl+2',
           click: () => sendMenuAction('tab-dispatch'),
         },
         {
-          label: 'Lịch sử & Nhật ký',
+          label: 'Lượt chạy',
           accelerator: 'CmdOrCtrl+3',
           click: () => sendMenuAction('tab-runs'),
         },
         {
-          label: 'Cài đặt & Setup',
-          accelerator: 'CmdOrCtrl+,',
+          label: 'Cài đặt',
+          accelerator: 'CmdOrCtrl+4',
           click: () => sendMenuAction('tab-settings'),
         },
       ],
@@ -200,6 +210,7 @@ function createMenu() {
 function createWindow() {
   const cliArgs = parseArgs(process.argv);
   currentDataDir = cliArgs.dataDir || resolveDataDir();
+  cliUrl = cliArgs.url || null;
 
   mainWindow = new BrowserWindow({
     width: 1260,
@@ -207,7 +218,8 @@ function createWindow() {
     minWidth: 880,
     minHeight: 640,
     title: 'AI Local Daemon',
-    backgroundColor: nativeTheme.shouldUseDarkColors ? '#0b0f19' : '#f8fafc',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#15171c' : '#f4f5f7',
+    autoHideMenuBar: true, // the sidebar carries the navigation; Alt shows the menu
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -252,7 +264,7 @@ ipcMain.handle('daemon-info', () => {
   const dataDir = currentDataDir || resolveDataDir();
   return {
     dataDir,
-    daemonUrl: findDaemonUrl(dataDir) || 'http://127.0.0.1:7471/',
+    daemonUrl: cliUrl || findDaemonUrl(dataDir) || 'http://127.0.0.1:7471/',
     hasToken: Boolean(findDaemonToken(dataDir)),
     platform: process.platform,
     version: app.getVersion(),
@@ -261,7 +273,7 @@ ipcMain.handle('daemon-info', () => {
 
 ipcMain.handle('daemon-api', async (_event, { method = 'GET', pathname = '/api/state', body = undefined, customUrl = null } = {}) => {
   const dataDir = currentDataDir || resolveDataDir();
-  const baseUrl = (customUrl || findDaemonUrl(dataDir) || 'http://127.0.0.1:7471/').replace(/\/+$/, '');
+  const baseUrl = (customUrl || cliUrl || findDaemonUrl(dataDir) || 'http://127.0.0.1:7471/').replace(/\/+$/, '');
   const token = findDaemonToken(dataDir);
   const normalizedPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
   const targetUrl = new URL(normalizedPath, baseUrl);
