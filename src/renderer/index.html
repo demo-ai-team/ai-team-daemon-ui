@@ -531,7 +531,7 @@
     <button type="button" class="side-btn" id="btn-theme" title="Đổi giao diện sáng / tối">
       <svg class="ic"><use href="#i-theme"/></svg><span id="theme-label">Theo hệ thống</span>
     </button>
-    <div class="side-row"><span id="foot-version"></span><span id="foot-mode"></span></div>
+    <div class="side-row"><span id="foot-version">v__VERSION__</span><span id="foot-mode"></span></div>
   </div>
 </aside>
 
@@ -1968,7 +1968,7 @@
     setText($('node-name'), snap && snap.name ? snap.name : 'chưa đăng ký');
     $('node-name').title = snap ? `${snap.name || ''} · ${snap.daemon_id || ''}` : '';
     const version = (snap && snap.version) || data.version;
-    setText($('foot-version'), version ? `v${version}` : '');
+    if (version) setText($('foot-version'), version ? `v${version}` : '');
     setText($('foot-mode'), desktop ? 'Desktop' : data.server && data.server.embedded ? 'Web · nhúng' : 'Web');
 
     const tasks = (snap && snap.tasks) || [];
@@ -2058,6 +2058,8 @@
   loadRuns();
   refresh();
 })();
+  // Mở từ tệp (Electron) thì chỗ thế phiên bản chưa được daemon thay: ẩn cho tới khi có dữ liệu.
+  { const fv = document.getElementById('foot-version'); if (fv && fv.textContent.startsWith('v__')) fv.textContent = ''; }
 </script>
 </body>
 </html>
