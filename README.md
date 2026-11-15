@@ -3,11 +3,16 @@
 Ứng dụng Desktop UI dành cho AI Local Daemon, được xây dựng bằng **Electron**.
 
 ## Tính năng
-- Cửa sổ native desktop cho AI Local Daemon.
-- Tự động phát hiện và kết nối tới daemon đang chạy qua loopback API.
-- Hỗ trợ Dark Mode / Light Mode theo hệ thống.
-- Hỗ trợ thông báo native khi task hoàn thành hoặc gặp lỗi.
-- Tích hợp phím tắt tiêu chuẩn (Reload, DevTools, Zoom).
+- Cửa sổ native desktop cho AI Local Daemon, tự tìm daemon đang chạy qua loopback API.
+- Bốn màn hình trên thanh bên: **Tổng quan** (slot, token, kết quả, task đang chạy, hoạt động), **Giao việc**, **Lượt chạy** (danh sách và nhật ký sự kiện), **Cài đặt** (chia nhóm, chỉ gửi những trường đã đổi).
+- Giao diện sáng, tối hoặc theo hệ thống.
+- Thông báo native khi có lỗi lúc cửa sổ đang ẩn.
+- Phím tắt: `Ctrl+1`…`Ctrl+4` chuyển màn hình, `Ctrl+N` giao việc, `Ctrl+P` tạm dừng hoặc tiếp tục, `F5` làm mới. Thanh menu ẩn, nhấn `Alt` để hiện.
+
+## Một trang, hai nơi chạy
+`src/renderer/index.html` cũng là trang mà daemon tự phục vụ (`ai-team-daemon view --web`, bản sao ở `ai-team-daemon/src/ui/index.html`). Daemon gửi trang kèm content security policy chỉ cho phép `<style>` và `<script>` có nonce, nên trang:
+- giữ nguyên các chỗ thế `__TOKEN__`, `__NONCE__`, `__VERSION__`;
+- không dùng thuộc tính `style="…"` (kể cả trong chuỗi gán cho `innerHTML`) và không tải tài nguyên ngoài.
 
 ## Cài đặt & Khởi chạy
 
